@@ -1,6 +1,6 @@
 from django.urls import path
 
-from order.views import OrderView, OrderListView
+from order.views import OrderView, OrderListView, OrderDetailView
 from product.views import ProductListView
 from user.views.login import LoginView
 from user.views.logout import LogoutView, LogoutAllView
@@ -21,4 +21,5 @@ urlpatterns = [
     path('products/list', ProductListView.as_view(), name='products-list'),
     path('orders', OrderView.as_view(), name='order-create'),
     path('orders/list', OrderListView.as_view(), name='order-list'),
+    path('orders/<int:order_id>', OrderDetailView.as_view(), name='order-detail'),
 ]

@@ -1,13 +1,12 @@
 from django.views.decorators.csrf import csrf_exempt
 from drf_spectacular.utils import extend_schema
-from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from order.models import OrderModel, OrderStatus, OrderItemModel
 from order.serializers import OrderSerializer
-from product.models import ProductModel
+from product.models import ProductModel, ProductImageModel
 
 
 class OrderView(APIView):
@@ -60,7 +59,7 @@ class OrderView(APIView):
         return Response(response_data, status=406)
 
 
-class OrderListView(ListAPIView):
+class OrderListView(APIView):
     """ View to List all Products """
     permission_classes = (IsAuthenticated,)
 
@@ -85,6 +84,51 @@ class OrderListView(ListAPIView):
                     'description': order.description,
                     'total_product': len(items)
                 })
+
+            return Response(self.response_data, status=200)
+        except Exception as exc:
+            print(exc)
+            self.response_data["success"] = False
+            self.response_data["detail"] = "Something getting wrong !"
+            return Response(self.response_data, status=400)
+
+
+class OrderDetailView(APIView):
+    """ View to List all Products """
+    permission_classes = (IsAuthenticated,)
+
+    @extend_schema(
+        operation_id="order",
+        tags=["order"]
+    )
+    def __init__(self):
+        super(OrderDetailView, self).__init__()
+        self.response_data = dict()
+
+    def get(self, request, order_id, *args, **kwargs):
+        """ List all products """
+        try:
+            order = OrderModel.objects.get(id=order_id)
+            order_items = OrderItemModel.objects.filter(order_id=order_id)
+            items_list = list()
+            total_price = 0
+            for item in order_items:
+                total_price += item.product_price * item.quantity
+                images = ProductImageModel.objects.filter(product_id=item.product_id)
+                items_list.append({
+                    'product_id': item.product_id,
+                    'price': item.product_price,
+                    'total_price': item.product_price * item.quantity,
+                    'quantity': item.quantity,
+                    'images': [picture.image.url for picture in images]
+                })
+            self.response_data = {
+                'order_id': order.id,
+                'description': order.description,
+                'total_products': len(order_items),
+                'total_price': total_price,
+                'items': items_list
+            }
 
             return Response(self.response_data, status=200)
         except Exception as exc:
