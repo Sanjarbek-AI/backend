@@ -34,8 +34,12 @@ class OrderView(APIView):
                     status=OrderStatus.ACCEPTED
                 )
                 new_order.save()
+                total_product = 0
+                total_price = 0
                 for data in validated_data['data']:
                     product = ProductModel.objects.get(id=int(data['product_id']))
+                    total_product += 1
+                    total_price += int(data['quantity']) * product.price
 
                     OrderItemModel.objects.create(
                         order_id=new_order.id,
@@ -43,6 +47,9 @@ class OrderView(APIView):
                         product_price=float(product.price),
                         quantity=int(data['quantity'])
                     )
+                new_order.total_price = total_price
+                new_order.total_product = total_product
+                new_order.save()
 
             response_data = {
                 'success': True,
@@ -63,48 +70,50 @@ class OrderListView(APIView):
     """ View to List all Products """
     permission_classes = (IsAuthenticated,)
 
+    def __init__(self):
+        super(OrderListView, self).__init__()
+        self.response_data = list()
+
     @extend_schema(
         operation_id="order",
         tags=["order"]
     )
-    def __init__(self):
-        super(OrderListView, self).__init__()
-        self.response_data = dict()
-
     def get(self, request, *args, **kwargs):
         """ List all products """
         try:
             orders = OrderModel.objects.filter(user_id=request.user.id)
-            self.response_data["success"] = True
-            self.response_data["orders"] = list()
+
             for order in orders:
-                items = OrderItemModel.objects.filter(order_id=order.id)
-                self.response_data["orders"].append({
+                self.response_data.append({
                     'id': order.id,
                     'description': order.description,
-                    'total_product': len(items)
+                    'total_product': order.total_product,
+                    'total_price': order.total_price,
+                    'ordered_date': str(order.created_date)[:10]
                 })
 
             return Response(self.response_data, status=200)
         except Exception as exc:
             print(exc)
-            self.response_data["success"] = False
-            self.response_data["detail"] = "Something getting wrong !"
-            return Response(self.response_data, status=400)
+            response_data = {
+                'success': False,
+                'detail': 'Order not created',
+            }
+            return Response(response_data, status=400)
 
 
 class OrderDetailView(APIView):
     """ View to List all Products """
     permission_classes = (IsAuthenticated,)
 
-    @extend_schema(
-        operation_id="order",
-        tags=["order"]
-    )
     def __init__(self):
         super(OrderDetailView, self).__init__()
         self.response_data = dict()
 
+    @extend_schema(
+        operation_id="order",
+        tags=["order"]
+    )
     def get(self, request, order_id, *args, **kwargs):
         """ List all products """
         try:

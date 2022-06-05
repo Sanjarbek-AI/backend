@@ -1,8 +1,5 @@
 from django.db import models
 
-from product.models import ProductModel
-from user.models import UserModel
-
 
 class OrderStatus(models.IntegerChoices):
     ACCEPTED = 1
@@ -18,12 +15,12 @@ class OrderType(models.IntegerChoices):
 
 class OrderModel(models.Model):
     """ Order model to store data in the database """
-    user_id = models.IntegerField(verbose_name="Total product", blank=True, null=True)
+    user_id = models.IntegerField(verbose_name="User id", blank=True, null=True)
     total_product = models.IntegerField(verbose_name="Total product", blank=True, null=True)
     total_price = models.FloatField(verbose_name="Total price", blank=True, null=True)
     description = models.CharField(max_length=512, verbose_name="Description for order", blank=True, null=True)
-    location = models.CharField(max_length=255, verbose_name="text", blank=True, null=True)
-
+    location = models.CharField(max_length=255, verbose_name="Location of order", blank=True, null=True)
+    price = 0
     status = models.SmallIntegerField("Status", choices=OrderStatus.choices, default=OrderStatus.NOT_ACCEPTED)
 
     created_date = models.DateTimeField(auto_now_add=True)

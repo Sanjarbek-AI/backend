@@ -32,11 +32,18 @@ class SizeModel(models.Model):
         verbose_name_plural = "Sizes"
 
 
+class GenderChoice(models.IntegerChoices):
+    MEN = 1
+    WOMEN = 0
+    OTHER = 2
+
+
 class CategoryModel(models.Model):
     """ Model to store Colors data"""
     parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', blank=True, null=True)
     title = models.CharField(max_length=255, blank=True, null=True, verbose_name='Category title')
-
+    image = models.ImageField(upload_to='media/category/', verbose_name='category image', null=True, blank=True)
+    gender = models.SmallIntegerField("GenderChoice", choices=GenderChoice.choices, default=GenderChoice.OTHER)
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -74,7 +81,7 @@ class StoreModel(models.Model):
     description = models.CharField(max_length=512, verbose_name="Description", blank=True, null=True)
     location = models.CharField(max_length=512, verbose_name="Location title", blank=True, null=True)
     location_link = models.CharField(max_length=512, verbose_name="Location link", blank=True, null=True)
-
+    gender = models.SmallIntegerField("GenderChoice", choices=GenderChoice.choices, default=GenderChoice.OTHER)
     status = models.SmallIntegerField("Status", choices=StoreStatus.choices, default=StoreStatus.INACTIVE)
 
     created_date = models.DateTimeField(auto_now_add=True)
