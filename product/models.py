@@ -48,7 +48,7 @@ class CategoryModel(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.title
+        return f'{self.title} | {self.gender}'
 
     class Meta:
         verbose_name = "Category"
@@ -83,9 +83,15 @@ class StoreModel(models.Model):
     location_link = models.CharField(max_length=512, verbose_name="Location link", blank=True, null=True)
     gender = models.SmallIntegerField("GenderChoice", choices=GenderChoice.choices, default=GenderChoice.OTHER)
     status = models.SmallIntegerField("Status", choices=StoreStatus.choices, default=StoreStatus.INACTIVE)
-
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.name} | {self.gender}'
+
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
 
 
 class ProductModel(models.Model):
@@ -132,3 +138,21 @@ class ProductImageModel(models.Model):
         """ Class Meta """
         verbose_name = 'Product images'
         verbose_name_plural = 'Products images'
+
+
+class WishlistModel(models.Model):
+    """ Product model to store data in the database """
+    product_id = models.IntegerField(verbose_name="Product id", blank=True, null=True)
+    user_id = models.IntegerField(verbose_name="User id", blank=True, null=True)
+
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        """ Rewritten object display method """
+        return f"Wishlist: {self.product_id}, {self.user_id}"
+
+    class Meta:
+        """ Class Meta """
+        verbose_name = 'Wishlist'
+        verbose_name_plural = 'Wishlists'
